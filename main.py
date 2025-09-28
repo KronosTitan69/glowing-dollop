@@ -55,24 +55,49 @@ def check_dependencies():
             missing_packages.append(package)
             print(f"✗ {package} (missing)")
     
+    # Check Qiskit availability
+    try:
+        import qiskit
+        print(f"✓ qiskit (version {qiskit.__version__})")
+        qiskit_available = True
+    except ImportError:
+        print("⚠ qiskit (optional - enhanced quantum features disabled)")
+        qiskit_available = False
+    
     if missing_packages:
         print(f"\nMissing packages: {', '.join(missing_packages)}")
         print("Please install missing packages using: pip install -r requirements.txt")
-        return False
+        return False, qiskit_available
     
-    print("All dependencies available!")
-    return True
+    print("All required dependencies available!")
+    if qiskit_available:
+        print("🚀 Qiskit detected - quantum circuit simulation enabled")
+    else:
+        print("📊 Running with classical simulation only")
+    
+    return True, qiskit_available
 
-def run_bb84_simulation():
+def run_bb84_simulation(use_quantum_circuits=False):
     """Run BB84 QKD protocol simulation."""
     print("\n" + "="*60)
     print("1. BB84 QKD Protocol Simulation")
+    if use_quantum_circuits:
+        print("   🚀 Using Quantum Circuit Enhancement")
+    else:
+        print("   📊 Using Classical Simulation")
     print("="*60)
     
     try:
-        from bb84_qkd_simulation import simulate_qkd_scenarios
-        results = simulate_qkd_scenarios()
-        print("✓ BB84 simulation completed successfully")
+        if use_quantum_circuits:
+            # Use quantum-enhanced simulation
+            from bb84_qkd_simulation import simulate_quantum_enhanced_scenarios
+            results = simulate_quantum_enhanced_scenarios()
+            print("✓ Quantum-enhanced BB84 simulation completed successfully")
+        else:
+            # Use classical simulation
+            from bb84_qkd_simulation import simulate_qkd_scenarios
+            results = simulate_qkd_scenarios()
+            print("✓ Classical BB84 simulation completed successfully")
         return results
     except Exception as e:
         print(f"✗ BB84 simulation failed: {e}")
@@ -193,7 +218,8 @@ def main():
     print_banner()
     
     # Check dependencies
-    if not check_dependencies():
+    deps_ok, qiskit_available = check_dependencies()
+    if not deps_ok:
         print("\nPlease install missing dependencies and try again.")
         return
     
@@ -214,8 +240,8 @@ def main():
     # Run all analyses
     print("\nStarting comprehensive quantum encryption verification...")
     
-    # 1. BB84 QKD Simulation
-    results['bb84_simulation'] = run_bb84_simulation()
+    # 1. BB84 QKD Simulation (with quantum enhancement if available)
+    results['bb84_simulation'] = run_bb84_simulation(use_quantum_circuits=qiskit_available)
     
     # 2. Eavesdropping Analysis
     results['eavesdropping_analysis'] = run_eavesdropping_analysis()
