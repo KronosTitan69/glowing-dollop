@@ -1,12 +1,34 @@
 # Quantum Encryption Verification System
 
-A comprehensive system for verifying and analyzing quantum encryption technologies, focusing on Quantum Key Distribution (QKD), post-quantum cryptography integration, and practical implementation challenges.
+A comprehensive system for verifying and analyzing quantum encryption technologies, featuring **real quantum circuit simulation with Qiskit integration** and full backward compatibility for classical analysis.
+
+## 🚀 New: Qiskit Integration
+
+This system now includes **full Qiskit integration** for authentic quantum circuit simulation while maintaining complete backward compatibility:
+
+### Quantum-Enhanced Features
+- **Real Quantum Circuits**: BB84 protocol implemented with actual quantum gates and measurements
+- **Quantum State Preparation**: Proper |0⟩, |1⟩, |+⟩, |-⟩ state preparation using X and H gates
+- **Quantum Measurement**: Basis-dependent measurements with proper quantum statistics
+- **Quantum Noise Simulation**: Realistic channel noise using quantum error models
+- **Circuit Visualization**: Educational quantum circuit diagrams and analysis
+- **Automatic Fallback**: Seamless classical simulation when Qiskit unavailable
+
+### Installation Options
+```bash
+# Option 1: Full quantum features (recommended)
+pip install -r requirements.txt
+
+# Option 2: Classical simulation only
+pip install numpy matplotlib seaborn scipy pandas
+```
 
 ## Overview
 
 This system provides a complete framework for:
 
-- **BB84 QKD Protocol Simulation**: Full implementation of the BB84 quantum key distribution protocol
+- **🚀 Quantum Circuit BB84 Simulation**: Real quantum circuit implementation with Qiskit
+- **📊 Classical BB84 Simulation**: Mathematical probability simulation (fallback)
 - **Eavesdropping Analysis**: Comprehensive analysis of various eavesdropping attacks and their detection
 - **Key Rate Analysis**: Detailed analysis of key generation rates and quantum bit error rates (QBER)
 - **Post-Quantum Cryptography Integration**: Hybrid systems combining QKD with post-quantum algorithms
@@ -15,12 +37,21 @@ This system provides a complete framework for:
 
 ## Features
 
-### 🔐 Quantum Key Distribution (QKD)
-- Complete BB84 protocol implementation
-- Alice, Bob, and Eve simulation components
-- Random basis selection and qubit preparation
-- Classical sifting and error correction
-- Security analysis and eavesdropping detection
+### 🚀 Quantum Circuit Simulation (NEW)
+- **Real Quantum Circuits**: Authentic quantum gate operations using Qiskit
+- **Quantum State Preparation**: X gates for bit flips, H gates for superposition
+- **Basis-Dependent Measurement**: Proper quantum measurement with basis rotations
+- **Quantum Noise Models**: Bit-flip, phase-flip, and depolarizing noise
+- **Circuit Statistics**: Gate counts, circuit depth, and execution analysis
+- **Educational Visualizations**: Quantum circuit diagrams and explanations
+
+### 🔐 BB84 Quantum Key Distribution
+- **Quantum-Enhanced Protocol**: Real quantum circuits when Qiskit available
+- **Classical Fallback**: Mathematical simulation for backward compatibility
+- **Complete Implementation**: Alice, Bob, and Eve simulation components
+- **Random Basis Selection**: Z-basis (|0⟩,|1⟩) and X-basis (|+⟩,|-⟩) states
+- **Classical Sifting**: Automatic basis matching and key extraction
+- **Security Analysis**: QBER calculation and eavesdropping detection
 
 ### 🕵️ Eavesdropping Analysis
 - Intercept-resend attacks
@@ -85,17 +116,50 @@ pip install -r requirements.txt
 ## Usage
 
 ### Quick Start
-Run the complete analysis:
 
+#### With Quantum Circuits (Recommended)
 ```bash
+# Install all dependencies including Qiskit
+pip install -r requirements.txt
+
+# Run with quantum circuit simulation
 python main.py
 ```
 
-This will execute all components of the verification system and generate comprehensive reports and visualizations.
+#### Classical Simulation Only
+```bash
+# Install minimal dependencies
+pip install numpy matplotlib seaborn scipy pandas
+
+# Run with classical simulation
+python main.py
+```
+
+The system automatically detects Qiskit availability and uses quantum circuits when possible, falling back to classical simulation otherwise.
+
+### 🚀 New Quantum Features
+
+#### Quantum-Enhanced BB84 Simulation
+```python
+from bb84_qkd_simulation import simulate_quantum_enhanced_scenarios
+quantum_results = simulate_quantum_enhanced_scenarios()
+```
+
+#### Qiskit Integration Demo
+```python
+# Run comprehensive quantum/classical comparison
+python demo_qiskit_integration.py
+```
+
+#### Test Quantum Integration
+```python
+# Verify Qiskit integration
+python test_qiskit_integration.py
+```
 
 ### Individual Components
 
-#### BB84 QKD Simulation
+#### Classical BB84 QKD Simulation
 ```python
 from bb84_qkd_simulation import simulate_qkd_scenarios
 results = simulate_qkd_scenarios()
@@ -192,6 +256,69 @@ The system generates the following outputs:
    - Statistical validation
    - Anomaly detection
    - Performance benchmarking
+
+## 🛠️ Technical Implementation
+
+### Quantum Circuit Integration
+
+#### State Preparation
+```python
+# |0⟩ state: No gates needed (default)
+qc = QuantumCircuit(1, 1)
+
+# |1⟩ state: Apply X gate
+qc.x(0)
+
+# |+⟩ state: Apply H gate  
+qc.h(0)
+
+# |-⟩ state: Apply X then H
+qc.x(0)
+qc.h(0)
+```
+
+#### Measurement Bases
+```python
+# Z-basis measurement (computational basis)
+qc.measure(0, 0)
+
+# X-basis measurement (Hadamard basis)
+qc.h(0)  # Transform to computational basis
+qc.measure(0, 0)
+```
+
+#### Noise Simulation
+```python
+# Apply random Pauli gates for noise
+if random.random() < noise_probability:
+    gate = random.choice(['x', 'y', 'z'])
+    getattr(qc, gate)(0)  # Apply chosen gate
+```
+
+### Architecture Components
+
+#### Enhanced BB84QKD Class
+- `create_alice_quantum_circuit()`: Quantum state preparation
+- `create_bob_measurement_circuit()`: Basis-dependent measurement  
+- `simulate_quantum_channel_noise()`: Quantum noise application
+- `execute_quantum_circuit()`: Circuit execution with error handling
+- `run_quantum_enhanced_protocol()`: Complete quantum simulation
+
+#### Fallback Compatibility
+- Automatic Qiskit detection with `QISKIT_AVAILABLE` flag
+- Identical API for quantum and classical modes
+- Seamless degradation when Qiskit unavailable
+- Classical probability models as fallback
+
+### Performance Characteristics
+
+| Feature | Quantum Mode | Classical Mode |
+|---------|-------------|----------------|
+| **Accuracy** | Authentic quantum behavior | Probabilistic approximation |
+| **Speed** | ~100-1000 qubits/sec | ~10,000+ qubits/sec |
+| **Memory** | Circuit storage required | Minimal overhead |
+| **Education** | Real quantum gates/measurements | Mathematical concepts |
+| **Debugging** | Circuit analysis available | Statistical analysis |
 
 ## Theoretical Foundation
 

@@ -647,23 +647,6 @@ def simulate_qkd_scenarios():
     
     return results
 
-if __name__ == "__main__":
-    print("BB84 Quantum Key Distribution Protocol Simulation")
-    print("=" * 50)
-    
-    # Run simulation scenarios
-    results = simulate_qkd_scenarios()
-    
-    # Print summary
-    print("\nSimulation Summary:")
-    print("-" * 30)
-    for scenario, result in results.items():
-        print(f"{scenario:20} | QBER: {result.error_rate:.4f} | "
-              f"Key Rate: {result.key_generation_rate:.4f} | "
-              f"Secure: {not result.eavesdropping_detected}")
-    
-    return results
-
 def simulate_quantum_enhanced_scenarios():
     """
     Run QKD simulations with quantum circuit enhancement.
