@@ -24,6 +24,18 @@ import warnings
 # Suppress warnings for cleaner output
 warnings.filterwarnings('ignore')
 
+# Qiskit integration for circuit visualizations
+try:
+    from qiskit import QuantumCircuit, QuantumRegister, ClassicalRegister
+    from qiskit.visualization import circuit_drawer, plot_histogram
+    from qiskit.providers.basic_provider import BasicProvider
+    from qiskit import execute
+    QISKIT_AVAILABLE = True
+    print("✓ Qiskit imported for quantum circuit visualizations")
+except ImportError:
+    QISKIT_AVAILABLE = False
+    print("Warning: Qiskit not available. Circuit visualizations will be disabled.")
+
 # Set up plotting style
 plt.style.use('seaborn-v0_8')
 sns.set_palette("husl")
@@ -399,6 +411,233 @@ class QuantumDiagramGenerator:
         plt.tight_layout()
         return fig
     
+    def create_bb84_quantum_circuits_diagram(self) -> plt.Figure:
+        """
+        Create diagram showing BB84 quantum circuits using Qiskit.
+        
+        Returns:
+            Figure with BB84 quantum circuit visualizations
+        """
+        fig, axes = plt.subplots(2, 2, figsize=(16, 12))
+        fig.suptitle('BB84 Quantum Circuits', fontsize=16, weight='bold')
+        
+        if not QISKIT_AVAILABLE:
+            # Fallback diagram without Qiskit
+            for i, ax in enumerate(axes.flat):
+                ax.text(0.5, 0.5, 'Qiskit not available\nCircuit visualization disabled', 
+                       ha='center', va='center', fontsize=12, 
+                       bbox=dict(boxstyle="round,pad=0.3", facecolor='lightgray'))
+                ax.set_xlim(0, 1)
+                ax.set_ylim(0, 1)
+                ax.axis('off')
+            
+            plt.tight_layout()
+            return fig
+        
+        try:
+            # Create BB84 state preparation circuits
+            circuits = []
+            titles = []
+            
+            # |0⟩ state (bit=0, basis=Z)
+            qc_0z = QuantumCircuit(1, 1)
+            qc_0z.measure(0, 0)
+            circuits.append(qc_0z)
+            titles.append('|0⟩ state (bit=0, Z basis)')
+            
+            # |1⟩ state (bit=1, basis=Z)
+            qc_1z = QuantumCircuit(1, 1)
+            qc_1z.x(0)
+            qc_1z.measure(0, 0)
+            circuits.append(qc_1z)
+            titles.append('|1⟩ state (bit=1, Z basis)')
+            
+            # |+⟩ state (bit=0, basis=X)
+            qc_0x = QuantumCircuit(1, 1)
+            qc_0x.h(0)
+            qc_0x.measure(0, 0)
+            circuits.append(qc_0x)
+            titles.append('|+⟩ state (bit=0, X basis)')
+            
+            # |-⟩ state (bit=1, basis=X)
+            qc_1x = QuantumCircuit(1, 1)
+            qc_1x.x(0)
+            qc_1x.h(0)
+            qc_1x.measure(0, 0)
+            circuits.append(qc_1x)
+            titles.append('|-⟩ state (bit=1, X basis)')
+            
+            # Draw circuits on subplots
+            for i, (qc, title) in enumerate(zip(circuits, titles)):
+                ax = axes.flat[i]
+                
+                # Create text representation of circuit
+                circuit_str = self._quantum_circuit_to_text(qc)
+                
+                ax.text(0.1, 0.7, title, fontsize=12, weight='bold', transform=ax.transAxes)
+                ax.text(0.1, 0.3, circuit_str, fontsize=10, family='monospace', 
+                       transform=ax.transAxes, verticalalignment='top')
+                
+                # Add quantum state notation
+                if 'Z basis' in title:
+                    state_text = '|0⟩' if 'bit=0' in title else '|1⟩'
+                else:  # X basis
+                    state_text = '|+⟩' if 'bit=0' in title else '|-⟩'
+                
+                ax.text(0.8, 0.5, f'State: {state_text}', fontsize=14, weight='bold',
+                       ha='center', va='center', transform=ax.transAxes,
+                       bbox=dict(boxstyle="round,pad=0.3", facecolor=self.colors['qubit']))
+                
+                ax.set_xlim(0, 1)
+                ax.set_ylim(0, 1)
+                ax.axis('off')
+        
+        except Exception as e:
+            # Fallback if circuit creation fails
+            print(f"Warning: Circuit visualization failed: {e}")
+            for ax in axes.flat:
+                ax.text(0.5, 0.5, f'Circuit visualization failed:\n{str(e)}', 
+                       ha='center', va='center', fontsize=10)
+                ax.axis('off')
+        
+        plt.tight_layout()
+        return fig
+    
+    def create_quantum_measurement_diagram(self) -> plt.Figure:
+        """
+        Create diagram showing quantum measurement process.
+        
+        Returns:
+            Figure explaining quantum measurement with circuits
+        """
+        fig, axes = plt.subplots(2, 2, figsize=(16, 10))
+        fig.suptitle('Quantum Measurement in Different Bases', fontsize=16, weight='bold')
+        
+        if QISKIT_AVAILABLE:
+            try:
+                # Demonstrate measurement in different bases
+                test_cases = [
+                    ('|0⟩ in Z basis', 'Measure |0⟩ in computational basis', 0, 'Z', 'Z'),
+                    ('|0⟩ in X basis', 'Measure |0⟩ in Hadamard basis', 0, 'Z', 'X'),
+                    ('|+⟩ in Z basis', 'Measure |+⟩ in computational basis', 0, 'X', 'Z'),
+                    ('|+⟩ in X basis', 'Measure |+⟩ in Hadamard basis', 0, 'X', 'X'),
+                ]
+                
+                for i, (title, desc, bit, prep_basis, meas_basis) in enumerate(test_cases):
+                    ax = axes.flat[i]
+                    
+                    # Create circuit
+                    qc = QuantumCircuit(1, 1)
+                    
+                    # Prepare state
+                    if bit == 1:
+                        qc.x(0)
+                    if prep_basis == 'X':
+                        qc.h(0)
+                    
+                    qc.barrier()
+                    
+                    # Measurement basis transformation
+                    if meas_basis == 'X':
+                        qc.h(0)
+                    
+                    qc.measure(0, 0)
+                    
+                    # Text representation
+                    circuit_text = self._quantum_circuit_to_text(qc)
+                    
+                    ax.text(0.05, 0.9, title, fontsize=12, weight='bold', transform=ax.transAxes)
+                    ax.text(0.05, 0.7, desc, fontsize=10, transform=ax.transAxes)
+                    ax.text(0.05, 0.4, circuit_text, fontsize=9, family='monospace', 
+                           transform=ax.transAxes, verticalalignment='top')
+                    
+                    # Expected outcome
+                    if prep_basis == meas_basis:
+                        outcome = "Deterministic result"
+                        color = self.colors['success']
+                    else:
+                        outcome = "Random result (50/50)"
+                        color = self.colors['error']
+                    
+                    ax.text(0.05, 0.1, f"Outcome: {outcome}", fontsize=10, weight='bold',
+                           transform=ax.transAxes, 
+                           bbox=dict(boxstyle="round,pad=0.3", facecolor=color))
+                    
+                    ax.set_xlim(0, 1)
+                    ax.set_ylim(0, 1)
+                    ax.axis('off')
+            
+            except Exception as e:
+                print(f"Warning: Measurement diagram creation failed: {e}")
+                for ax in axes.flat:
+                    ax.text(0.5, 0.5, 'Quantum measurement\nvisualization unavailable', 
+                           ha='center', va='center', fontsize=12)
+                    ax.axis('off')
+        else:
+            # Fallback without Qiskit
+            measurement_concepts = [
+                "Computational Basis (Z)\n|0⟩ → 0, |1⟩ → 1",
+                "Hadamard Basis (X)\n|+⟩ → 0, |-⟩ → 1",
+                "Incompatible Bases\nMeasuring |0⟩ in X basis\ngives random result",
+                "BB84 Security\nEve's measurement\ndisturbs quantum states"
+            ]
+            
+            for i, concept in enumerate(measurement_concepts):
+                ax = axes.flat[i]
+                ax.text(0.5, 0.5, concept, ha='center', va='center', fontsize=12,
+                       bbox=dict(boxstyle="round,pad=0.5", facecolor='lightblue'))
+                ax.set_xlim(0, 1)
+                ax.set_ylim(0, 1)
+                ax.axis('off')
+        
+        plt.tight_layout()
+        return fig
+    
+    def _quantum_circuit_to_text(self, circuit) -> str:
+        """
+        Convert quantum circuit to simple text representation.
+        
+        Args:
+            circuit: Qiskit QuantumCircuit
+            
+        Returns:
+            Text representation of the circuit
+        """
+        if not QISKIT_AVAILABLE:
+            return "Circuit visualization not available"
+        
+        try:
+            # Simple text representation
+            lines = []
+            lines.append("q_0: ─")
+            
+            for instruction in circuit.data:
+                gate_name = instruction.operation.name
+                if gate_name == 'x':
+                    lines[0] += "─X─"
+                elif gate_name == 'h':
+                    lines[0] += "─H─"
+                elif gate_name == 'y':
+                    lines[0] += "─Y─"
+                elif gate_name == 'z':
+                    lines[0] += "─Z─"
+                elif gate_name == 'measure':
+                    lines[0] += "─M─"
+                elif gate_name == 'barrier':
+                    lines[0] += "░░░"
+                else:
+                    lines[0] += f"─{gate_name.upper()}─"
+            
+            lines[0] += "─"
+            
+            if circuit.num_clbits > 0:
+                lines.append("c_0: ═" + "═" * (len(lines[0]) - 5) + "═")
+            
+            return "\n".join(lines)
+            
+        except Exception as e:
+            return f"Circuit: {circuit.num_qubits} qubits, {len(circuit.data)} operations"
+    
     def create_all_diagrams(self) -> List[plt.Figure]:
         """
         Create all quantum concept diagrams.
@@ -426,6 +665,16 @@ class QuantumDiagramGenerator:
         print("Creating eavesdropping detection diagram...")
         figures.append(self.create_eavesdropping_detection_diagram())
         
+        # Add quantum circuit diagrams if Qiskit is available
+        if QISKIT_AVAILABLE:
+            print("Creating BB84 quantum circuits diagram...")
+            figures.append(self.create_bb84_quantum_circuits_diagram())
+            
+            print("Creating quantum measurement diagram...")
+            figures.append(self.create_quantum_measurement_diagram())
+        else:
+            print("Skipping quantum circuit diagrams (Qiskit not available)")
+        
         return figures
     
     def save_all_diagrams(self, figures: List[plt.Figure], prefix: str = "quantum_diagram"):
@@ -444,6 +693,13 @@ class QuantumDiagramGenerator:
             "measurement_bases",
             "eavesdropping_detection"
         ]
+        
+        # Add quantum circuit diagram names if Qiskit is available
+        if QISKIT_AVAILABLE:
+            diagram_names.extend([
+                "bb84_quantum_circuits",
+                "quantum_measurement"
+            ])
         
         for i, (fig, name) in enumerate(zip(figures, diagram_names)):
             filename = f"quantum_encryption_verification/{prefix}_{name}.png"
